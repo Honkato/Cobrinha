@@ -132,7 +132,7 @@ def proc_colisoes():
         matriz_posicao.append({'xy': [-50, -50]})
 
 
-def desenhar(tela):
+def desenhar():
 
 
     for i, parte in enumerate(matriz_posicao):
@@ -153,7 +153,7 @@ if __name__ == '__main__':
         eventos()
         andar_cobra()
         proc_colisoes()
-        desenhar(tela)
+        desenhar()
         # pygame.draw.rect(tela, '#00FF00', (0, 0, QUADRADO, QUADRADO))
         pygame.display.flip()
         relogio.tick(FPS)
