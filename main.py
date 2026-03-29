@@ -1,3 +1,5 @@
+import random
+
 import pygame
 
 SCREEN_WIDTH = 800
@@ -9,8 +11,8 @@ VELOCIDADE = 5
 
 rodando = True
 
-desired_direction = 'right'
-current_direction = 'right'
+desired_direction = None
+current_direction = None
 
 matriz_posicao = []
 
@@ -24,10 +26,10 @@ def init_game():
     historico.clear()
 
     for i in range(3):
-        matriz_posicao.append({'xy': [200 - i * QUADRADO, 100]})
+        matriz_posicao.append({'xy': [200, 100]})
 
-    current_direction = 'right'
-    desired_direction = 'right'
+    current_direction = None
+    desired_direction = None
 
 
 def pode_virar():
@@ -43,6 +45,12 @@ def eventos():
             rodando = False
 
         if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_h :
+                print("cresceu")
+                matriz_posicao.append({'xy': [200, 100]})
+            if evento.key == pygame.K_k:
+                print("gerou")
+                gerar_frutas()
             if evento.key == pygame.K_UP and current_direction != 'down':
                 desired_direction = 'up'
             if evento.key == pygame.K_DOWN and current_direction != 'up':
@@ -51,6 +59,27 @@ def eventos():
                 desired_direction = 'left'
             if evento.key == pygame.K_RIGHT and current_direction != 'left':
                 desired_direction = 'right'
+
+fruta_gerada = False
+fruta_position = [0,0]
+
+def gerar_frutas():
+    global matriz_posicao, historico, current_direction, desired_direction, fruta_gerada, fruta_position
+    if not fruta_gerada:
+        while True:
+            h = random.randint(0, SCREEN_HEIGHT)
+            y_final = h - h % QUADRADO
+            w = random.randint(0, SCREEN_WIDTH)
+            x_final = w - w % QUADRADO
+            print(y_final)
+            print(x_final)
+            if not ([x_final, y_final] in matriz_posicao):
+                break
+        fruta_position = [x_final, y_final]
+        fruta_gerada = True
+    pygame.draw.rect(tela, "#00FF00", (fruta_position[0], fruta_position[1], QUADRADO, QUADRADO))
+
+
 
 
 def andar_cobra():
@@ -81,6 +110,7 @@ def andar_cobra():
 
 
 def proc_colisoes():
+    global fruta_gerada
     head = matriz_posicao[0]['xy']
 
     if (
@@ -93,18 +123,22 @@ def proc_colisoes():
         init_game()
 
     for parte in matriz_posicao[1:]:
-        if head == parte['xy']:
+        if head == parte['xy'] and current_direction is not None:
             print("bateu no corpo")
             init_game()
 
+    if head == fruta_position:
+        fruta_gerada = False
+        matriz_posicao.append({'xy': [-50, -50]})
+
 
 def desenhar(tela):
-    tela.fill("#5050b9")
+
 
     for i, parte in enumerate(matriz_posicao):
         cor = "#000000" if i == 0 else "#F53737"
         pygame.draw.rect(tela, cor, (parte['xy'][0], parte['xy'][1], QUADRADO, QUADRADO))
-
+    gerar_frutas()
 
 if __name__ == '__main__':
     pygame.init()
@@ -115,11 +149,12 @@ if __name__ == '__main__':
     init_game()
 
     while rodando:
+        tela.fill("#5050b9")
         eventos()
         andar_cobra()
         proc_colisoes()
         desenhar(tela)
-
+        # pygame.draw.rect(tela, '#00FF00', (0, 0, QUADRADO, QUADRADO))
         pygame.display.flip()
         relogio.tick(FPS)
 
